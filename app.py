@@ -1,7 +1,5 @@
 import os
 from dotenv import load_dotenv
-import base64
-import requests
 from flask import Flask, request, url_for, session, redirect
 import spotipy 
 from spotipy.oauth2 import SpotifyOAuth
