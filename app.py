@@ -4,6 +4,7 @@ from flask import Flask, request, url_for, session, redirect
 import spotipy 
 from spotipy.oauth2 import SpotifyOAuth
 import time
+from df_tools import gen_df
 
 load_dotenv()
 cid = os.getenv('client_id')
@@ -12,6 +13,25 @@ cst = os.getenv('client_secret')
 app = Flask(__name__)
 app.secret_key = os.getenv("flaskappsc")
 app.config["SESSION_COOKIE_NAME"]  = os.getenv("flaskappcookie")
+
+def get_token():
+    token_info = session.get("token_info",None)
+    if not token_info:
+        raise "Exception"
+    
+    now = int(time.time())
+    if (now - token_info['expires_at']) > 60:
+        sp_oauth = create_spotify_oauth()
+        token_info = sp_oauth.refresh_access_token(token_info['refresh_token'])
+    return token_info
+
+def create_spotify_oauth():
+    return SpotifyOAuth(
+        client_id=cid,
+        client_secret=cst,
+        redirect_uri = url_for('redirectPage',_external=True),
+        scope="user-top-read"
+    )
 
 @app.route("/")
 def login():
@@ -36,27 +56,14 @@ def getTracks():
         print('user not logged in')
         return redirect("/")
     sp = spotipy.Spotify(auth=token_info['access_token'])
-    return sp.current_user_top_tracks()['items']
+    small_generator = gen_df(sp,sp.current_user_top_tracks(time_range="short_term",limit = 10)['items'])
+    medium_generator = gen_df(sp,sp.current_user_top_tracks(limit = 20)['items'])
+    large_generator = gen_df(sp,sp.current_user_top_tracks(time_range="long_term",limit = 50)['items'])
+    data = [small_generator,medium_generator,large_generator]
 
-def get_token():
-    token_info = session.get("token_info",None)
-    print(token_info)
-    if not token_info:
-        raise "Exception"
     
-    now = int(time.time())
-    if (now - token_info['expires_at']) > 60:
-        sp_oauth = create_spotify_oauth()
-        token_info = sp_oauth.refresh_access_token(token_info['refresh_token'])
-    return token_info
+    return 'hello'
 
-def create_spotify_oauth():
-    return SpotifyOAuth(
-        client_id=cid,
-        client_secret=cst,
-        redirect_uri = url_for('redirectPage',_external=True),
-        scope="user-top-read"
-    )
 
 
 if __name__ == '__main__':
