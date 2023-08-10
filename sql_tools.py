@@ -102,9 +102,9 @@ class azSqlDB:
                                 JOIN sys.schemas s ON (t.schema_id = s.schema_id) \
                                 WHERE s.name = 'dbo' AND t.name = 'SongDetails') 	\
                                 CREATE TABLE SongDetails (\
-                                    songID VARCHAR(22), songName TEXT, \
+                                    songID VARCHAR(22), songName NTEXT, \
                                     artistID VARCHAR(22),featuring TEXT, \
-                                    album TEXT,releaseDate DATE, \
+                                    album NTEXT,releaseDate DATE, \
                                     popularity TINYINT, PRIMARY KEY(songID));")
                 seensongID = set()
                 for songRow in cursor.execute("SELECT songID FROM SongDetails").fetchall():
@@ -112,4 +112,4 @@ class azSqlDB:
                         seensongID.add(songRow[0])
                 for _,row in df.iterrows():
                     if row['songID'] not in seensongID:
-                        cursor.execute(f"INSERT INTO SongDetails VALUES ('{row['songID']}','{row['songName']}','{row['artistID']}','{row['featuring']}','{row['album']}','{row['releaseDate']}',{row['popularity']})")
+                        cursor.execute(f"INSERT INTO SongDetails VALUES ('{row['songID']}',N'{row['songName']}','{row['artistID']}','{row['featuring']}',N'{row['album']}','{row['releaseDate']}',{row['popularity']})")

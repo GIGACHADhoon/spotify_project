@@ -14,7 +14,6 @@ class gen_df:
         rank_data = []
         rank = 1
         for data in self.json_data:
-            # get song id
             song_id = data['id']
             rank_data.append({'songID':song_id,'rank':rank})
             rank += 1
@@ -23,22 +22,15 @@ class gen_df:
     def create_songDetails(self):
         song_data = []
         for data in self.json_data:
-            # get song id
             song_id = data['id']
-            # get song name
             song_name = data['name'].replace("'","")
-            # get artist names
             artist_id = data['artists'][0]['id']
             featuring = []
             for artist_object in data['artists'][1:]:
                 featuring.append(artist_object['name'])
-            # get album name
             album = data['album']['name'].replace("'","")
-            # release date
             release_date = data['album']['release_date']
-            # popularity
             popularity = data['popularity']
-            # append json to 
             song_data.append({'songID':song_id,'songName':song_name,'artistID':artist_id,
                               'featuring':','.join(featuring),'album':album,'releaseDate':release_date,
                             'popularity':popularity})
