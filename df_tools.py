@@ -2,9 +2,13 @@ import pandas as pd
 
 class gen_df:
 
-    def __init__(self,sp,json_data):
+    def __init__(self,sp,json_data,tf="medium_term"):
         self.json_data = json_data
         self.sp = sp
+        self.tf =tf
+
+    def get_name(self):
+        return self.tf
 
     def create_rankings(self):
         rank_data = []
@@ -16,25 +20,25 @@ class gen_df:
             rank += 1
         return pd.DataFrame(rank_data)
         
-
     def create_songDetails(self):
         song_data = []
         for data in self.json_data:
             # get song id
             song_id = data['id']
             # get song name
-            song_name = data['name']
+            song_name = data['name'].replace("'","")
             # get artist names
             artist_id = data['artists'][0]['id']
             featuring = []
             for artist_object in data['artists'][1:]:
                 featuring.append(artist_object['name'])
             # get album name
-            album = data['album']['name']
+            album = data['album']['name'].replace("'","")
             # release date
             release_date = data['album']['release_date']
             # popularity
             popularity = data['popularity']
+            # append json to 
             song_data.append({'songID':song_id,'songName':song_name,'artistID':artist_id,
                               'featuring':','.join(featuring),'album':album,'releaseDate':release_date,
                             'popularity':popularity})
@@ -65,7 +69,7 @@ class gen_df:
                 genre_data.append({'artistID':artist_id,'genre':genre_object})
         return pd.DataFrame(genre_data)
     
-    def create_snippets(self):
+    def create_snippet(self):
         snippets_data = []
         for data in self.json_data: 
             # get song id

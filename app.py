@@ -5,8 +5,10 @@ import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 import time
 from df_tools import gen_df
-
+from sql_tools import azSqlDB
+import time
 load_dotenv()
+
 cid = os.getenv('client_id')
 cst = os.getenv('client_secret')
 
@@ -56,12 +58,19 @@ def getTracks():
         print('user not logged in')
         return redirect("/")
     sp = spotipy.Spotify(auth=token_info['access_token'])
-    small_generator = gen_df(sp,sp.current_user_top_tracks(time_range="short_term",limit = 10)['items'])
-    medium_generator = gen_df(sp,sp.current_user_top_tracks(limit = 20)['items'])
-    large_generator = gen_df(sp,sp.current_user_top_tracks(time_range="long_term",limit = 50)['items'])
-    data = [small_generator,medium_generator,large_generator]
-
-    
+    short = gen_df(sp,sp.current_user_top_tracks(time_range="short_term",limit = 10)['items'],"short_term")
+    medium = gen_df(sp,sp.current_user_top_tracks(limit = 20)['items'])
+    large = gen_df(sp,sp.current_user_top_tracks(time_range="long_term",limit = 50)['items'],"long_term")
+    data = [short,medium,large]
+    sql_tool = azSqlDB()
+    for spotifyDF in data:
+        sql_tool.sqlRankings(spotifyDF.create_rankings(),spotifyDF.get_name())
+        time.sleep(5)
+        sql_tool.sqlGenre(spotifyDF.create_genre())
+        sql_tool.sqlSnippets(spotifyDF.create_snippet())
+        sql_tool.sqlArtist(spotifyDF.create_artist())
+        sql_tool.sqlImage(spotifyDF.create_songIMG())
+        sql_tool.sqlSongs(spotifyDF.create_songDetails())
     return 'hello'
 
 
